@@ -1,12 +1,20 @@
+import time
+
 from flask import Flask, request, jsonify
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField
 from wtforms.validators import DataRequired, Length, Email
-import threading
-from send_mail import send_email_async
+from mailer import Mailer
+from mongodb_manager import MongoDBManager
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
+
+request_count = 0
+last_reset_time = time.time()
+
+mailer = Mailer()
+mongodb_manager = MongoDBManager()
 
 class MessageForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired(), Length(min=2, max=64)])
@@ -27,9 +35,25 @@ def validate_json(json_data):
 
     return form.validate(), form.errors
 
-def send_email(name, email, message):
-    thread = threading.Thread(target=send_email_async, args=(name, email, message))
-    thread.start()
+@app.before_request
+def limit_requests():
+    global request_count, last_reset_time
+
+    # Get the current time
+    current_time = time.time()
+
+    # Reset the request count if more than a minute has passed
+    if current_time - last_reset_time > 60:
+        request_count = 0
+        last_reset_time = current_time
+
+    # Maximum number of requests
+    max_requests = 3
+
+    if request_count >= max_requests:
+        return jsonify({"error": "Too many requests. Please try again later."}), 429
+
+    request_count += 1
 
 @app.route('/send-mail', methods=['POST'])
 def index():
@@ -40,8 +64,11 @@ def index():
     if not json_data or not is_valid:
         return jsonify({"error": "Invalid JSON format or data", "errors": errors}), 400
 
-    # Use a thread to provide a quasi-asynchronous structure
-    send_email(json_data['name'], json_data['email'], json_data['message'])
+    # Store the data in MongoDB
+    mongodb_manager.store_data(json_data['name'], json_data['email'], json_data['message'])
+
+    # Call the function for sending email
+    mailer.send_email(json_data['name'], json_data['email'], json_data['message'])
 
     return jsonify({"success": "Data received and validated successfully"}), 200
 
