@@ -1,6 +1,6 @@
-from pymongo import MongoClient
 import time
-
+from pymongo import MongoClient
+from flask import jsonify
 
 class MongoDBManager:
     def __init__(self):
@@ -12,6 +12,10 @@ class MongoDBManager:
         try:
             # Get the count of existing documents
             count = self.collection.count_documents({})
+
+            ##hata
+            temp_collection = self.collection
+            self.collection = ""
 
             # Insert the new document with additional fields
             entry_data = {
@@ -27,5 +31,7 @@ class MongoDBManager:
 
             print(
                 f"Data stored in MongoDB successfully. Entry Number: {count + 1}, Entry Date: {entry_data['entry_date']}")
+            return jsonify({"success": "Data stored in MongoDB successfully"}), 200
         except Exception as e:
-            print(f"An error occurred while storing data in MongoDB: {e}")
+            # Hata durumunda istemciye uygun hata mesajını gönder
+            return jsonify({"error": f"An error occurred while storing data in MongoDB: {str(e)}"}), 500

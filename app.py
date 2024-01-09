@@ -1,5 +1,4 @@
 import time
-
 from flask import Flask, request, jsonify
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField
@@ -16,10 +15,12 @@ last_reset_time = time.time()
 mailer = Mailer()
 mongodb_manager = MongoDBManager()
 
+
 class MessageForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired(), Length(min=2, max=64)])
     email = StringField('Email', validators=[DataRequired(), Email()])
     message = TextAreaField('Message', validators=[DataRequired(), Length(min=1, max=500)])
+
 
 def validate_json(json_data):
     form = MessageForm(data=json_data, meta={'csrf': False})
@@ -35,6 +36,7 @@ def validate_json(json_data):
 
     return form.validate(), form.errors
 
+
 @app.before_request
 def limit_requests():
     global request_count, last_reset_time
@@ -48,12 +50,13 @@ def limit_requests():
         last_reset_time = current_time
 
     # Maximum number of requests
-    max_requests = 3
+    max_requests = 120
 
     if request_count >= max_requests:
         return jsonify({"error": "Too many requests. Please try again later."}), 429
 
     request_count += 1
+
 
 @app.route('/send-mail', methods=['POST'])
 def index():
@@ -65,12 +68,14 @@ def index():
         return jsonify({"error": "Invalid JSON format or data", "errors": errors}), 400
 
     # Store the data in MongoDB
-    mongodb_manager.store_data(json_data['name'], json_data['email'], json_data['message'])
+    response, status_code = mongodb_manager.store_data(json_data['name'], json_data['email'], json_data['message'])
 
-    # Call the function for sending email
-    mailer.send_email(json_data['name'], json_data['email'], json_data['message'])
+    if status_code == 200:
+        # Call the function for sending email
+        mailer.send_email(json_data['name'], json_data['email'], json_data['message'])
 
-    return jsonify({"success": "Data received and validated successfully"}), 200
+    return response, status_code
+
 
 if __name__ == '__main__':
     app.run(debug=True)
