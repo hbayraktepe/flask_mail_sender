@@ -1,28 +1,27 @@
-import smtplib
 import os
-from email.mime.text import MIMEText
+import smtplib
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 
 class Mailer:
     def __init__(self):
-        self.smtp_server = os.getenv('SMTP_SERVER')
+        self.smtp_server = os.getenv("SMTP_SERVER")
         self.smtp_port = 587
-        self.smtp_username = os.getenv('SMTP_USERNAME')
-        self.smtp_password = os.getenv('SMTP_PASSWORD')
-        self.to_address = os.getenv('TO_ADDRESS')
-
+        self.smtp_username = os.getenv("SMTP_USERNAME")
+        self.smtp_password = os.getenv("SMTP_PASSWORD")
+        self.to_address = os.getenv("TO_ADDRESS")
 
     def send_email(self, name, email, message):
-        subject = 'Web Form Submission'
-        body = f'Name: {name}\nEmail: {email}\nMessage: {message}'
+        subject = "Web Form Submission"
+        body = f"Name: {name}\nEmail: {email}\nMessage: {message}"
 
         # Create email
         msg = MIMEMultipart()
-        msg['From'] = self.smtp_username
-        msg['To'] = self.to_address
-        msg['Subject'] = subject
-        msg.attach(MIMEText(body, 'plain'))
+        msg["From"] = self.smtp_username
+        msg["To"] = self.to_address
+        msg["Subject"] = subject
+        msg.attach(MIMEText(body, "plain"))
 
         try:
             # Create SMTP connection and send email

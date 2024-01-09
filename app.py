@@ -1,13 +1,15 @@
 import time
-from flask import Flask, request, jsonify
+
+from flask import Flask, jsonify, request
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField
-from wtforms.validators import DataRequired, Length, Email
+from wtforms.validators import DataRequired, Email, Length
+
 from mailer import Mailer
 from mongodb_manager import MongoDBManager
 
 app = Flask(__name__)
-app.secret_key = 'supersecretkey'
+app.secret_key = "supersecretkey"
 
 request_count = 0
 last_reset_time = time.time()
@@ -17,16 +19,18 @@ mongodb_manager = MongoDBManager()
 
 
 class MessageForm(FlaskForm):
-    name = StringField('Name', validators=[DataRequired(), Length(min=2, max=64)])
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    message = TextAreaField('Message', validators=[DataRequired(), Length(min=1, max=500)])
+    name = StringField("Name", validators=[DataRequired(), Length(min=2, max=64)])
+    email = StringField("Email", validators=[DataRequired(), Email()])
+    message = TextAreaField(
+        "Message", validators=[DataRequired(), Length(min=1, max=500)]
+    )
 
 
 def validate_json(json_data):
-    form = MessageForm(data=json_data, meta={'csrf': False})
+    form = MessageForm(data=json_data, meta={"csrf": False})
 
     # Check the presence of columns
-    expected_columns = {'name', 'email', 'message'}  # Expected columns
+    expected_columns = {"name", "email", "message"}  # Expected columns
     received_columns = set(json_data.keys())  # Received columns
 
     unexpected_columns = received_columns - expected_columns
@@ -58,7 +62,7 @@ def limit_requests():
     request_count += 1
 
 
-@app.route('/send-mail', methods=['POST'])
+@app.route("/send-mail", methods=["POST"])
 def index():
     json_data = request.json
 
@@ -68,14 +72,16 @@ def index():
         return jsonify({"error": "Invalid JSON format or data", "errors": errors}), 400
 
     # Store the data in MongoDB
-    response, status_code = mongodb_manager.store_data(json_data['name'], json_data['email'], json_data['message'])
+    response, status_code = mongodb_manager.store_data(
+        json_data["name"], json_data["email"], json_data["message"]
+    )
 
     if status_code == 200:
         # Call the function for sending email
-        mailer.send_email(json_data['name'], json_data['email'], json_data['message'])
+        mailer.send_email(json_data["name"], json_data["email"], json_data["message"])
 
     return response, status_code
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
