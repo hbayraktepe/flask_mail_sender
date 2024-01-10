@@ -6,7 +6,7 @@ from pymongo import MongoClient
 
 class MongoDBManager:
     def __init__(self):
-        self.client = MongoClient("mongodb://localhost:27017/")
+        self.client = MongoClient("mongodb://mongodb:27017/")
         self.db = self.client["webapp"]
         self.collection = self.db["contact_infos"]
 
@@ -15,9 +15,9 @@ class MongoDBManager:
             # Get the count of existing documents
             count = self.collection.count_documents({})
 
-            ##hata
-            temp_collection = self.collection
-            self.collection = ""
+            # #to make mongodb_error
+            # temp_collection = self.collection
+            # self.collection = ""
 
             # Insert the new document with additional fields
             entry_data = {
