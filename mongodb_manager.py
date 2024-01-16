@@ -3,21 +3,19 @@ import time
 from flask import jsonify
 from pymongo import MongoClient
 
+CONNECTION_STRING = "mongodb://192.168.4.44:27017/?readPreference=primary&directConnection=true&ssl=false"
+
 
 class MongoDBManager:
     def __init__(self):
-        self.client = MongoClient("mongodb://mongodb:27017/")
-        self.db = self.client["webapp"]
+        self.client = MongoClient(CONNECTION_STRING)
+        self.db = self.client["crm_tanitim_webapp"]
         self.collection = self.db["contact_infos"]
 
     def store_data(self, name, email, message):
         try:
             # Get the count of existing documents
             count = self.collection.count_documents({})
-
-            # #to make mongodb_error
-            # temp_collection = self.collection
-            # self.collection = ""
 
             # Insert the new document with additional fields
             entry_data = {
@@ -36,7 +34,6 @@ class MongoDBManager:
             )
             return jsonify({"success": "Data stored in MongoDB successfully"}), 200
         except Exception as e:
-            # Hata durumunda istemciye uygun hata mesajını gönder
             return (
                 jsonify(
                     {

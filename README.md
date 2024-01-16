@@ -1,6 +1,23 @@
-You have to create a file which named .env and set to these paramaters.
-SMTP_SERVER=smtp.gmail.com
-SMTP_PORT="gmail port"
-SMTP_USERNAME="gmail"
-SMTP_PASSWORD="gmail app pass"
-TO_ADDRESS="mail"
+# Python Email Sender
+
+Send emails automatically using most email service providers with this simple script in Python!
+
+## Overview
+The two modules used in this script are *smtplib* and *email.mime.text*.
+
+- `smtplib` is a Python standard library module that provides an implementation of the Simple Mail Transfer Protocol (SMTP) for sending email messages. It is used to send email messages over the Internet, using an SMTP server.
+- `email.mime.text` is a module within the email package, which is also part of the Python standard library. It provides the `MIMEText` class, which is used to create plain text email messages. The `MIMEText` class takes the plain text message as an argument and creates an email message object, which can then be sent using an `smtplib` SMTP server.
+
+## Usage
+To use this email sender, you'll need the following information:
+
+   - The address of the SMTP server you'll be using.
+   - The port number used by the SMTP server.
+   - Your email account credentials.
+
+Follow these steps to run the email sender:
+
+1. Enter your email,password and SMTP Server information in the credentials.py file.
+2. Configure your mongodb server information.
+3. Run the app.py file."
+
